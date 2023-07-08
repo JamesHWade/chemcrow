@@ -1,2 +1,12 @@
 pre-commit
 python-dotenv
+rdkit
+synspace
+molbloom
+paper-qa>=3.0.0
+google-search-results
+langchain
+nest_asyncio
+tiktoken
+rmrkl
+git+https://github.com/blackadad/paper-scraper.git
