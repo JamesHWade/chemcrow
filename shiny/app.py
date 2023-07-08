@@ -31,6 +31,7 @@ def server(input, output, session):
     @render.text
     @reactive.event(input.chat) # triggered when the "Chat" button is clicked
     async def result():
+        ui.notification_show("Processing your request...", type="message")
         try:
             response = await asyncio.to_thread(chem_model.run, input.prompt())
             return response
