@@ -15,9 +15,11 @@ app_ui = ui.page_fluid(
     ui.output_text("result"),
     ui.hr(),
     ui.div(
-        {"style": "font-weight: bold;"},
+        {"style": "align-items: center; display: flex; flex-direction: column; justify-content: center;"},
         ui.img(src="https://github.com/ur-whitelab/chemcrow-public/raw/main/assets/chemcrow_light_thin.png", width="400px")
     ),
+    ui.br(),
+    ui.markdown('ChemCrow was [introduced](https://arxiv.org/abs/2304.05376) by Bran, Andres M., et al. "ChemCrow: Augmenting large-language models with chemistry tools." arXiv preprint arXiv:2304.05376 (2023). This tool is an extension of that work that puts the code into an interactive web app by [James Wade](https://jameshwade.com). Find the code for the app [here](https://github.com/jameshwade/chemcrow) and the original code [here](https://github.com/ur-whitelab/chemcrow-public)')
 )
 
 
