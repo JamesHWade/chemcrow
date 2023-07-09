@@ -2,6 +2,7 @@ from shiny import ui, reactive, render, App
 from chemcrow.agents import ChemCrow
 import asyncio
 import shinyswatch
+import html
 
 chem_model = ChemCrow(model="gpt-4-0613", temp=0.1, verbose=True)
 
@@ -15,7 +16,7 @@ app_ui = ui.page_fluid(
         ui.column(3, ui.input_action_button("chat", "Chat", class_="btn btn-primary btn-lg btn-block", width="100%"),)
     ),
     ui.output_text("txt"),
-    ui.output_ui("response_ui"),
+    ui.output_ui("prompt_ui"),
     ui.output_ui("result"),
     ui.hr(),
     ui.div(
@@ -26,20 +27,18 @@ app_ui = ui.page_fluid(
     ui.markdown(f'ChemCrow was [introduced](https://arxiv.org/abs/2304.05376) by Bran, Andres M., et al. "ChemCrow: Augmenting large-language models with chemistry tools." arXiv preprint arXiv:2304.05376 (2023). This tool is an extension of that work that puts the code into an interactive web app created by [James Wade](https://jameshwade.com) using [Shiny for Python](https://shiny.posit.co/py/). Find the code for the app [here](https://github.com/jameshwade/chemcrow) and the original code [here](https://github.com/ur-whitelab/chemcrow-public).')
 )
 
-
 def server(input, output, session):
     @reactive.Effect()
     def _():
         if input.chat():
             ui.update_text("prompt", value="")
-            return f'Prompt: {input.prompt()}'
     
     @output
     @render.ui
     @reactive.event(input.chat)
-    def response_ui():
-        # return a list of UI elements
-        list_ui = ui.markdown(f'**Prompt**\n\n {input.prompt()}')
+    def prompt_ui():
+        list_ui = [ui.strong("Prompt"),
+                   ui.markdown(input.prompt())]
         return list_ui
 
     @output
@@ -49,10 +48,12 @@ def server(input, output, session):
         ui.notification_show("Chatting with ChemCrow...", type="message")
         try:
             response = await asyncio.to_thread(chem_model.run, input.prompt())
-            list_ui = [ui.markdown(f'**Thoughts**\n\n {response[0]}'),
-                       ui.markdown(f'**Reasoning**\n\n {response[1]}'),
-                       ui.br(),
-                       ui.markdown(f'**Answer**\n\n {response[2]}')]
+            list_ui = [ui.strong("Thoughts"),
+                       ui.markdown(response[0]),
+                       ui.strong("Reasoning"),
+                       ui.markdown(response[1]),
+                       ui.strong("Answer"),
+                       ui.markdown(response[2])]
             return list_ui
         except TypeError:
             async def error_coro():

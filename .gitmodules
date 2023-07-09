@@ -1,0 +1,3 @@
+[submodule "chemcrow-ui"]
+	path = chemcrow-ui
+	url = https://huggingface.co/spaces/jameshwade/chemcrow-ui
