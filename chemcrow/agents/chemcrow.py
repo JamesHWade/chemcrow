@@ -1,33 +1,24 @@
-import langchain
 import nest_asyncio
-from langchain import PromptTemplate, chains
+from langchain import PromptTemplate, chains, chat_models
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from rmrkl import ChatZeroShotAgent, RetryAgentExecutor
 
 from .prompts import FORMAT_INSTRUCTIONS, QUESTION_PROMPT, REPHRASE_TEMPLATE, SUFFIX
 from .tools import make_tools
 
-
 def _make_llm(model, temp, verbose):
     if model.startswith("gpt-3.5-turbo") or model.startswith("gpt-4"):
-        llm = langchain.chat_models.ChatOpenAI(
+        llm = chat_models.ChatOpenAI(
             temperature=temp,
-            model_name=model,
+            model=model,
             request_timeout=1000,
             streaming=True if verbose else False,
-            callbacks=[StreamingStdOutCallbackHandler()] if verbose else [None],
-        )
-    elif model.startswith("text-"):
-        llm = langchain.OpenAI(
-            temperature=temp,
-            model_name=model,
-            streaming=True if verbose else False,
-            callbacks=[StreamingStdOutCallbackHandler()] if verbose else [None],
+            callbacks=[StreamingStdOutCallbackHandler()] if verbose else [],
+            client=None
         )
     else:
         raise ValueError(f"Invalid model name: {model}")
     return llm
-
 
 class ChemCrow:
     def __init__(
@@ -42,13 +33,14 @@ class ChemCrow:
         self.llm = _make_llm(model, temp, verbose)
         if tools is None:
             tools_llm = _make_llm(tools_model, temp, verbose)
-            tools = make_tools(tools_llm, verbose=verbose)
+            if tools_llm is not None:
+                tools = make_tools(tools_llm, verbose=verbose)
         # Initialize agent
         self.agent_executor = RetryAgentExecutor.from_agent_and_tools(
-            tools=tools,
+            tools=tools or [],
             agent=ChatZeroShotAgent.from_llm_and_tools(
                 self.llm,
-                tools,
+                tools or [],
                 suffix=SUFFIX,
                 format_instructions=FORMAT_INSTRUCTIONS,
                 question_prompt=QUESTION_PROMPT,
@@ -73,9 +65,11 @@ class ChemCrow:
 
         final = ""
         for step in intermed:
-            final += f"Thought: {step[0].log}\n" f"Observation: {step[1]}\n"
-        final += f"Final Answer: {outputs['output']}"
+            final += f"Thought: {step[0].log}\n" f"\nObservation: {step[1]}\n"
+        final += f"\nFinal Answer: {outputs['output']}"
 
         rephrased = self.rephrase_chain.run(question=prompt, agent_ans=final)
         print(f"ChemCrow output: {rephrased}")
-        return rephrased
+        
+        # return both the final response and the rephrased response
+        return final, rephrased, outputs["output"]

@@ -8,7 +8,7 @@ chem_model = ChemCrow(model="gpt-4-0613", temp=0.1, verbose=True)
 app_ui = ui.page_fluid(
     shinyswatch.theme.slate(),
     ui.panel_title("ChemCrow UI"),
-    ui.p("An experiment with Shiny and ChemCrow"),
+    ui.p("An experiment with Shiny for Python and ChemCrow"),
     ui.br(),
     ui.row(
         ui.column(9, ui.input_text("prompt", label=None, placeholder="E.g., What is the molecular weight of tylenol?", width="100%")),
@@ -39,17 +39,21 @@ def server(input, output, session):
     @reactive.event(input.chat)
     def response_ui():
         # return a list of UI elements
-        list_ui = [ui.p("Chatting with ChemCrow..."), ui.markdown(f'**Prompt**: {input.prompt()}')]
+        list_ui = ui.markdown(f'**Prompt**\n\n {input.prompt()}')
         return list_ui
 
     @output
     @render.ui
     @reactive.event(input.chat) # triggered when the "Chat" button is clicked
     async def result():
-        ui.notification_show("Processing your request...", type="message")
+        ui.notification_show("Chatting with ChemCrow...", type="message")
         try:
             response = await asyncio.to_thread(chem_model.run, input.prompt())
-            return ui.markdown(f'**Response**: {response}')
+            list_ui = [ui.markdown(f'**Thoughts**\n\n {response[0]}'),
+                       ui.markdown(f'**Reasoning**\n\n {response[1]}'),
+                       ui.br(),
+                       ui.markdown(f'**Answer**\n\n {response[2]}')]
+            return list_ui
         except TypeError:
             async def error_coro():
                 return "An error occurred while processing your request."
