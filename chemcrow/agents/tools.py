@@ -8,9 +8,10 @@ from chemcrow.tools import *
 
 def make_tools(llm: BaseLanguageModel, verbose=False):
     serp_key = os.getenv("SERP_API_KEY")
-
-    all_tools = agents.load_tools(["python_repl", "human"])
-
+    # removing human temporarily from tools
+    # all_tools = agents.load_tools(["python_repl", "human"])
+    all_tools = agents.load_tools(["python_repl"])
+    
     all_tools += [
         Query2SMILES(),
         Query2CAS(),
