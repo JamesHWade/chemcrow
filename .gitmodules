@@ -1,3 +1,6 @@
 [submodule "chemcrow-ui"]
 	path = chemcrow-ui
 	url = https://huggingface.co/spaces/jameshwade/chemcrow-ui
+[submodule "hf-chemcrow"]
+	path = hf-chemcrow
+	url = https://huggingface.co/spaces/jameshwade/hf-chemcrow
