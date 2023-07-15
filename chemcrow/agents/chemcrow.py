@@ -1,6 +1,6 @@
 import nest_asyncio
+from typing import Any, Dict, List
 from langchain import PromptTemplate, chains, chat_models
-from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from rmrkl import ChatZeroShotAgent, RetryAgentExecutor
 
 from .prompts import FORMAT_INSTRUCTIONS, QUESTION_PROMPT, REPHRASE_TEMPLATE, SUFFIX
@@ -13,7 +13,6 @@ def _make_llm(model, temp, verbose):
             model=model,
             request_timeout=1000,
             streaming=True if verbose else False,
-            callbacks=[StreamingStdOutCallbackHandler()] if verbose else [],
             client=None
         )
     else:
@@ -56,7 +55,7 @@ class ChemCrow:
 
         self.rephrase_chain = chains.LLMChain(prompt=rephrase, llm=self.llm)
 
-    nest_asyncio.apply()  # Fix "this event loop is already running" error
+    nest_asyncio.apply()
 
     def run(self, prompt):
         outputs = self.agent_executor({"input": prompt})
